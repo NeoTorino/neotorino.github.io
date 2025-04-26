@@ -3,5 +3,5 @@
         <title>Tags - Tag - NeoTorino</title>
         <link>http://localhost:1313/tags/</link>
         <description>Tags - Tag - NeoTorino</description>
-        <generator>Hugo -- gohugo.io</generator><language>en-us</language><atom:link href="http://localhost:1313/tags/" rel="self" type="application/rss+xml" /></channel>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><atom:link href="http://localhost:1313/tags/" rel="self" type="application/rss+xml" /></channel>
 </rss>
