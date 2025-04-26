@@ -6,14 +6,6 @@
     <description>Recent content in Posts on NeoTorino</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 26 Apr 2025 13:38:18 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/post/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Shells</title>
-      <link>http://localhost:1313/post/shells/</link>
-      <pubDate>Sat, 26 Apr 2025 13:38:18 +0100</pubDate>
-      <guid>http://localhost:1313/post/shells/</guid>
-      <description>&lt;p&gt;First test&lt;/p&gt;</description>
-    </item>
   </channel>
 </rss>
