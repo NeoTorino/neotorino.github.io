@@ -1,37 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-	<meta name="generator" content="Hugo 0.145.0"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noodp" />
-        <title>NeoTorino</title><meta name="Description" content="Cybersecurity"><meta property="og:url" content="http://localhost:1313/">
+        <title>Assembly - NeoTorino</title><meta name="Description" content="Cybersecurity"><meta property="og:url" content="http://localhost:1313/assesmbly/">
   <meta property="og:site_name" content="NeoTorino">
-  <meta property="og:title" content="NeoTorino">
-  <meta property="og:description" content="Cybersecurity">
+  <meta property="og:title" content="Assembly">
+  <meta property="og:description" content="; Calculate the Fibonacci number using recursion ; fib(n) = fib(n-1) &#43; fib(n-2)
+lib.asm
+%include &#34;constants.asm&#34; section .data section .bss ;buffer	resb	255	; reserverd 255 bytes section .text ; ----------------------------------------------------------------------------- ; Calculate the length of a string in rsi. ; The string can end in LF (\n) or NUL (\0) ; Input: ;	rsi points to string ; Output: ;	rax contains length. ; Error: ;	rax returns -1 _fn_strlen: xor	rax, rax	; clear rax _fn_strlen_loop: cmp	BYTE [rsi &#43; rax], 0x0A	; compare with LF &#39;\n&#39; je	_fn_strlen_break cmp	BYTE [rsi &#43; rax], 0x00	; compare with NUL &#39;\0&#39; je	_fn_strlen_break inc	rax jmp	_fn_strlen_loop _fn_strlen_break: ret _fn_strlen_error: xor	rax, rax	; set to 0 (all 0s) not	rax	; invert (all 1s) ret ; ----------------------------------------------------------------------------- ; ; Convert string of numbers to integer ; Input: ;	rsi points to the string of numbers ending in &#39;\n&#39; ; Output: ;	rcx contains the integer representation ; Error: ;	rax equals 1	; Modifies: ;	rax, rbx, r8 ; Dependencies: ;	_fn_strlen, to calculate the length of the string ;	_fn_exit, to exit if error _fn_str2int: xor	rbx, rbx	; clear rbx, to store the decimal part xor	rcx, rcx	; clear rcx, to store the final number mov	r8,	0x0A	; base 10 _fn_str2int_init: ; Input rsi points to string ; Output rax contains length ; Modifies rax call	_fn_strlen	; calculate the length of the string cmp	al, 0	; exit function if length = 0 je	_fn_str2int_end	cmp	al, -1 je	_fn_str2int_err mov	rdx, rax	; copy the length from rax to rdx mov	rax, 0x01	; put 1 in rax _fn_str2int_base:	; create base 10 position dec	dl cmp	dl, 0 jle	_fn_str2int_decimal imul	rax, r8 jmp	_fn_str2int_base _fn_str2int_decimal: mov	bl, byte [rsi] cmp	bl, 0x30	; compare with num. 0 jl	_fn_str2int_err	; if not an integer go to erro cmp	bl, 0x39	; compare with num. 9 jg	_fn_str2int_err	; if not an integer go to error sub	bl, 0x30	; to get integer representation ; from a char number in ASCII mul	rbx	; add the integer part add	rcx, rax	; store decimal value inc	rsi jmp	_fn_str2int_init _fn_str2int_end: ret _fn_str2int_err: mov	rax, 0x01	; error code = 1 ret ; ----------------------------------------------------------------------------- ; ; Convert an integer to string ; Input: ;	rax contains the integer to convert to string ; Output: ;	rsi points to the string ;	rdx	contains the length of the string ; Error: ;	rax equals 1 ; Modifies: ;	rax, rcx ; Dependencies: ;	_fn_strlen, to calculate the length of the string ;	_fn_exit, to exit if error ; Notes: ;	- Division: ;	- Byte/Byte: The nominator resides in the AL register and AH is set to zero. After division, ;	the instruction stores quotient in AL and the remainder in AH register. ;	- Word/Word: The AX register holds the numerator. After division, the quotient is stored in ;	the AX register and the remainder goes to the DX register. ;	- Word/Byte: The numerator is a 16-bit word stored in AX which is divided with an 8-bit ;	denominator. After division, the AL contains the quotient and AH will contain ;	the remainder. ;	- Double Word/Word: AX and DX stores the numerator. The most significant part resides in ;	the DX register and the least significant bits of numerator are in the AX register. ;	After the execution of DIV instruction, the remainder goes to DX register ;	and the quotient lie in AX register. _fn_int2str: mov	rbx, 0x0A	; Put 10 in rbx xor	rcx, rcx	; clear rcx, to store the legnth xor	rdx, rdx	; clear rdx, to store the reminder for word or double word division _fn_int2str_init: cmp	rax, rbx	; check if number is smaller than the base jl	_fn_int2str_end	; end if smaller than base div	rbx	; rax = rax / rbx, rdx = rax % rbx add	dl, 0x30	; convert reminder to string in ASCII push	rdx	; push rdx to the stack inc	cl	; increment length jmp	_fn_int2str_init	; start again _fn_int2str_end: add	al, 0x30	; convert num to string push	rax inc	cl	; increment string length mov	al,	0x0A	; store LF &#39;\n&#39; push	rax inc	cl	; increment string length _fn_int2str_reverse: mov	dl, cl	; move the length to rdx xor	rcx, rcx cmp	dl, cl je	_fn_int2str_exit pop	rax mov	byte[buffer &#43; rcx], al inc	cl jmp	_fn_int2str_reverse ret _fn_int2str_exit: mov	rsi, buffer	; point rsi to buffer address ret _fn_int2str_err: mov	rax, 0x01	; error code = 1 ret ; ----------------------------------------------------------------------------- ; Exit program ; Input ;	rdi contains the return code _fn_exit: ; exit mov	rax, SYS_EXIT	; syscall for exit syscall	; call kernel ; ----------------------------------------------------------------------------- ; Reads input from stdin ; reads from stdin ; Input rsi -&gt; buffer ;	rdx = buffer length ; modifies rax, rdi _fn_read: mov	rax, SYS_READ	; syscall for read mov	rdi, STDIN	; stdin file descriptor syscall	; execute read(0, buffer, bufsize) ret ; ----------------------------------------------------------------------------- ; Writes to stdout ; Input rsi -&gt; string ; rdx = string length ; Modifies rax, rdi _fn_write: mov	rax, SYS_WRITE	; syscall for write mov	rdi, STDOUT	; stdout file descriptor syscall	; execute write() ret constants.asm">
   <meta property="og:locale" content="en">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-04-27T15:48:06+01:00">
+    <meta property="article:modified_time" content="2025-04-27T17:17:17+01:00">
+    <meta property="article:tag" content="Nasm">
     <meta property="og:image" content="http://localhost:1313/logo.png">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="http://localhost:1313/logo.png">
-  <meta name="twitter:title" content="NeoTorino">
-  <meta name="twitter:description" content="Cybersecurity">
+  <meta name="twitter:title" content="Assembly">
+  <meta name="twitter:description" content="; Calculate the Fibonacci number using recursion ; fib(n) = fib(n-1) &#43; fib(n-2)
+lib.asm
+%include &#34;constants.asm&#34; section .data section .bss ;buffer	resb	255	; reserverd 255 bytes section .text ; ----------------------------------------------------------------------------- ; Calculate the length of a string in rsi. ; The string can end in LF (\n) or NUL (\0) ; Input: ;	rsi points to string ; Output: ;	rax contains length. ; Error: ;	rax returns -1 _fn_strlen: xor	rax, rax	; clear rax _fn_strlen_loop: cmp	BYTE [rsi &#43; rax], 0x0A	; compare with LF &#39;\n&#39; je	_fn_strlen_break cmp	BYTE [rsi &#43; rax], 0x00	; compare with NUL &#39;\0&#39; je	_fn_strlen_break inc	rax jmp	_fn_strlen_loop _fn_strlen_break: ret _fn_strlen_error: xor	rax, rax	; set to 0 (all 0s) not	rax	; invert (all 1s) ret ; ----------------------------------------------------------------------------- ; ; Convert string of numbers to integer ; Input: ;	rsi points to the string of numbers ending in &#39;\n&#39; ; Output: ;	rcx contains the integer representation ; Error: ;	rax equals 1	; Modifies: ;	rax, rbx, r8 ; Dependencies: ;	_fn_strlen, to calculate the length of the string ;	_fn_exit, to exit if error _fn_str2int: xor	rbx, rbx	; clear rbx, to store the decimal part xor	rcx, rcx	; clear rcx, to store the final number mov	r8,	0x0A	; base 10 _fn_str2int_init: ; Input rsi points to string ; Output rax contains length ; Modifies rax call	_fn_strlen	; calculate the length of the string cmp	al, 0	; exit function if length = 0 je	_fn_str2int_end	cmp	al, -1 je	_fn_str2int_err mov	rdx, rax	; copy the length from rax to rdx mov	rax, 0x01	; put 1 in rax _fn_str2int_base:	; create base 10 position dec	dl cmp	dl, 0 jle	_fn_str2int_decimal imul	rax, r8 jmp	_fn_str2int_base _fn_str2int_decimal: mov	bl, byte [rsi] cmp	bl, 0x30	; compare with num. 0 jl	_fn_str2int_err	; if not an integer go to erro cmp	bl, 0x39	; compare with num. 9 jg	_fn_str2int_err	; if not an integer go to error sub	bl, 0x30	; to get integer representation ; from a char number in ASCII mul	rbx	; add the integer part add	rcx, rax	; store decimal value inc	rsi jmp	_fn_str2int_init _fn_str2int_end: ret _fn_str2int_err: mov	rax, 0x01	; error code = 1 ret ; ----------------------------------------------------------------------------- ; ; Convert an integer to string ; Input: ;	rax contains the integer to convert to string ; Output: ;	rsi points to the string ;	rdx	contains the length of the string ; Error: ;	rax equals 1 ; Modifies: ;	rax, rcx ; Dependencies: ;	_fn_strlen, to calculate the length of the string ;	_fn_exit, to exit if error ; Notes: ;	- Division: ;	- Byte/Byte: The nominator resides in the AL register and AH is set to zero. After division, ;	the instruction stores quotient in AL and the remainder in AH register. ;	- Word/Word: The AX register holds the numerator. After division, the quotient is stored in ;	the AX register and the remainder goes to the DX register. ;	- Word/Byte: The numerator is a 16-bit word stored in AX which is divided with an 8-bit ;	denominator. After division, the AL contains the quotient and AH will contain ;	the remainder. ;	- Double Word/Word: AX and DX stores the numerator. The most significant part resides in ;	the DX register and the least significant bits of numerator are in the AX register. ;	After the execution of DIV instruction, the remainder goes to DX register ;	and the quotient lie in AX register. _fn_int2str: mov	rbx, 0x0A	; Put 10 in rbx xor	rcx, rcx	; clear rcx, to store the legnth xor	rdx, rdx	; clear rdx, to store the reminder for word or double word division _fn_int2str_init: cmp	rax, rbx	; check if number is smaller than the base jl	_fn_int2str_end	; end if smaller than base div	rbx	; rax = rax / rbx, rdx = rax % rbx add	dl, 0x30	; convert reminder to string in ASCII push	rdx	; push rdx to the stack inc	cl	; increment length jmp	_fn_int2str_init	; start again _fn_int2str_end: add	al, 0x30	; convert num to string push	rax inc	cl	; increment string length mov	al,	0x0A	; store LF &#39;\n&#39; push	rax inc	cl	; increment string length _fn_int2str_reverse: mov	dl, cl	; move the length to rdx xor	rcx, rcx cmp	dl, cl je	_fn_int2str_exit pop	rax mov	byte[buffer &#43; rcx], al inc	cl jmp	_fn_int2str_reverse ret _fn_int2str_exit: mov	rsi, buffer	; point rsi to buffer address ret _fn_int2str_err: mov	rax, 0x01	; error code = 1 ret ; ----------------------------------------------------------------------------- ; Exit program ; Input ;	rdi contains the return code _fn_exit: ; exit mov	rax, SYS_EXIT	; syscall for exit syscall	; call kernel ; ----------------------------------------------------------------------------- ; Reads input from stdin ; reads from stdin ; Input rsi -&gt; buffer ;	rdx = buffer length ; modifies rax, rdi _fn_read: mov	rax, SYS_READ	; syscall for read mov	rdi, STDIN	; stdin file descriptor syscall	; execute read(0, buffer, bufsize) ret ; ----------------------------------------------------------------------------- ; Writes to stdout ; Input rsi -&gt; string ; rdx = string length ; Modifies rax, rdi _fn_write: mov	rax, SYS_WRITE	; syscall for write mov	rdi, STDOUT	; stdout file descriptor syscall	; execute write() ret constants.asm">
 <meta name="application-name" content="NeoTorino">
 <meta name="apple-mobile-web-app-title" content="NeoTorino">
 <meta name="referrer" content="no-referrer" /><meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://localhost:1313/" /><link rel="alternate" href="/index.xml" type="application/rss+xml" title="NeoTorino">
-    <link rel="feed" href="/index.xml" type="application/rss+xml" title="NeoTorino"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="/lib/fontawesome-free/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://localhost:1313/assesmbly/" /><link rel="prev" href="http://localhost:1313/c/" /><link rel="next" href="http://localhost:1313/rust/" /><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="/lib/fontawesome-free/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <noscript><link rel="stylesheet" href="/lib/fontawesome-free/css/all.min.css"></noscript><link rel="preload" href="/lib/animate/animate.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
     {
         "@context": "http://schema.org",
-        "@type": "WebSite",
-        "url": "http:\/\/localhost:1313\/","inLanguage": "en","author": {
+        "@type": "BlogPosting",
+        "headline": "Assembly",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/localhost:1313\/assesmbly\/"
+        },"genre": "posts","keywords": "nasm","wordcount":  1338 ,
+        "url": "http:\/\/localhost:1313\/assesmbly\/","datePublished": "2025-04-27T15:48:06+01:00","dateModified": "2025-04-27T17:17:17+01:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
                 "@type": "Person",
                 "name": "NeoTorino"
-            },"description": "Cybersecurity","name": "NeoTorino"
+            },"description": ""
     }
     </script></head>
     <body data-header-desktop="fixed" data-header-mobile="auto"><script>(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('auto' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : 'auto' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
@@ -94,73 +108,20 @@
     <div class="search-dropdown mobile">
         <div id="search-dropdown-mobile"></div>
     </div><main class="main">
-                <div class="container"><div class="page home" data-home="posts"><div class="home-profile"><div class="home-avatar"><a href="/posts/" title="Posts"><img
-        class="lazyload"
-        src="/svg/loading.min.svg"
-        data-src="/images/logo.jpg"
-        data-srcset="/images/logo.jpg, /images/logo.jpg 1.5x, /images/logo.jpg 2x"
-        data-sizes="auto"
-        alt="/images/logo.jpg"
-        title="/images/logo.jpg" /></a></div><div class="home-subtitle"><div id="id-1" class="typeit"></div></div></div>
-<article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
-        <a href="/rust/">Rust</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>NeoTorino</a></span>&nbsp;<span class="post-publish">published on <time datetime="2025-04-27">2025-04-27</time></span>&nbsp;<span class="post-category">included in <a href="/categories/rust/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Rust</a></span></div><div class="content"><p>To run it:</p>
-<div class="code-block code-line-numbers open" style="counter-reset: code-block 0">
-    <div class="code-header language-Shell">
-        <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
-        <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
-        <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
-    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Shell" data-lang="Shell"><span class="line"><span class="cl">rustc list_files.rs -o list_files
-</span></span><span class="line"><span class="cl">./list_files /path/to/directory</span></span></code></pre></div></div>
-<p><em>list_files.rs</em></p>
-<div class="code-block code-line-numbers" style="counter-reset: code-block 0">
-    <div class="code-header language-Rust">
-        <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
-        <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
-        <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
-    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Rust" data-lang="Rust"><span class="line"><span class="cl"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">env</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">fs</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">path</span>::<span class="n">Path</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">args</span>: <span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">env</span>::<span class="n">args</span><span class="p">().</span><span class="n">collect</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;Usage: </span><span class="si">{}</span><span class="s"> &lt;directory_path&gt;&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Path</span>::<span class="n">new</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">!</span><span class="n">path</span><span class="p">.</span><span class="n">is_dir</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;Error: </span><span class="si">{}</span><span class="s"> is not a directory&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">display</span><span class="p">());</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">fs</span>::<span class="n">read_dir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Listing files in directory: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">display</span><span class="p">());</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">entries</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">match</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;</span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="p">.</span><span class="n">file_name</span><span class="p">().</span><span class="n">to_string_lossy</span><span class="p">());</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;Error reading entry: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;Error opening directory: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">std</span>::<span class="n">process</span>::<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></div></div></div><div class="post-footer">
-        <a href="/rust/">Read More</a></div>
-</article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
-        <a href="/assesmbly/">Assembly</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>NeoTorino</a></span>&nbsp;<span class="post-publish">published on <time datetime="2025-04-27">2025-04-27</time></span>&nbsp;<span class="post-category">included in <a href="/categories/assembly/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Assembly</a></span></div><div class="content"><p>; Calculate the Fibonacci number using recursion
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">Contents</h2>
+            <div class="toc-content" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Assembly</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>NeoTorino</a></span>&nbsp;<span class="post-category">included in <a href="/categories/assembly/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Assembly</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw" aria-hidden="true"></i>&nbsp;<time datetime="2025-04-27">2025-04-27</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden="true"></i>&nbsp;1338 words&nbsp;
+                <i class="far fa-clock fa-fw" aria-hidden="true"></i>&nbsp;7 minutes&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  data-kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents"></nav></div>
+            </div><div class="content" id="content"><p>; Calculate the Fibonacci number using recursion
 ; fib(n) = fib(n-1) + fib(n-2)</p>
 <p><strong>lib.asm</strong></p>
 <div class="code-block code-line-numbers" style="counter-reset: code-block 0">
@@ -375,120 +336,188 @@
 </span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rdi</span><span class="p">,</span> <span class="n">STDOUT</span>			<span class="p">;</span> <span class="n">stdout</span> <span class="n">file</span> <span class="n">descriptor</span>
 </span></span><span class="line"><span class="cl">		<span class="n">syscall</span>						<span class="p">;</span> <span class="n">execute</span> <span class="n">write</span><span class="p">()</span>
 </span></span><span class="line"><span class="cl">		<span class="n">ret</span></span></span></code></pre></div></div>
-<p><strong>constants.asm</strong></p></div><div class="post-footer">
-        <a href="/assesmbly/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/nasm/">Nasm</a></div></div>
-</article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
-        <a href="/c/">C</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>NeoTorino</a></span>&nbsp;<span class="post-publish">published on <time datetime="2025-04-26">2025-04-26</time></span>&nbsp;<span class="post-category">included in <a href="/categories/c/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>C</a></span></div><div class="content"><p>To compile run:</p>
-<div class="code-block code-line-numbers open" style="counter-reset: code-block 0">
-    <div class="code-header language-Shell">
-        <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
-        <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
-        <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
-    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Shell" data-lang="Shell"><span class="line"><span class="cl">gcc list_files.c -o list_files
-</span></span><span class="line"><span class="cl">./list_files /path/to/directory</span></span></code></pre></div></div>
-<p>list_files.c</p>
+<p><strong>constants.asm</strong></p>
 <div class="code-block code-line-numbers" style="counter-reset: code-block 0">
-    <div class="code-header language-c">
+    <div class="code-header language-Assembly">
         <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
         <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
         <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
-    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
-</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;dirent.h&gt;</span><span class="cp">
-</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
-</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
-</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">dirent</span> <span class="o">*</span><span class="n">de</span><span class="p">;</span>  <span class="c1">// Pointer for directory entry
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">DIR</span> <span class="o">*</span><span class="n">dr</span><span class="p">;</span>
+    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">section .data
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Usage: %s &lt;directory_path&gt;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	SYS_EXIT	equ	60		; syscall number for exit (0x3c)
+</span></span><span class="line"><span class="cl">	SYS_WRITE	equ 1		; syscall number for write
+</span></span><span class="line"><span class="cl">	SYS_READ	equ 0		; syscall number for read
+</span></span><span class="line"><span class="cl">	STDIN		equ 0		; stdin file descriptor
+</span></span><span class="line"><span class="cl">	STDOUT		equ 1		; stdout file descriptor
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// Open the directory
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">dr</span> <span class="o">=</span> <span class="nf">opendir</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">dr</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nf">perror</span><span class="p">(</span><span class="s">&#34;Could not open directory&#34;</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">section .bss
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Listing files in directory: %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">((</span><span class="n">de</span> <span class="o">=</span> <span class="nf">readdir</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">de</span><span class="o">-&gt;</span><span class="n">d_name</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nf">closedir</span><span class="p">(</span><span class="n">dr</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span></span></span></code></pre></div></div></div><div class="post-footer">
-        <a href="/c/">Read More</a></div>
-</article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
-        <a href="/shells/">Shells</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel="author" class="author"><i class="fas fa-user-circle fa-fw" aria-hidden="true"></i>NeoTorino</a></span>&nbsp;<span class="post-publish">published on <time datetime="2025-04-26">2025-04-26</time></span>&nbsp;<span class="post-category">included in <a href="/categories/shell/"><i class="far fa-folder fa-fw" aria-hidden="true"></i>Shell</a></span></div><div class="content"><table>
-  <thead>
-      <tr>
-          <th>Name</th>
-          <th>Path</th>
-          <th>FreeBSD</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>Bourne shell</td>
-          <td>/bin/sh</td>
-          <td>Installed</td>
-      </tr>
-      <tr>
-          <td>Cshell</td>
-          <td>/bin/csh</td>
-          <td>Installed</td>
-      </tr>
-      <tr>
-          <td>TENEX C shell</td>
-          <td>/bin/tcsh</td>
-          <td>Installed</td>
-      </tr>
-      <tr>
-          <td>Bourne-again shell</td>
-          <td>/path/to/bin/bash</td>
-          <td>Available</td>
-      </tr>
-      <tr>
-          <td>Z shell</td>
-          <td>/path/to/bin/zsh</td>
-          <td>Available</td>
-      </tr>
-      <tr>
-          <td>Korn shell</td>
-          <td>/path/to/bin/kcsh</td>
-          <td>Available</td>
-      </tr>
-  </tbody>
-</table>
-<h2 id="print-1-to-5-script">Print 1 to 5&quot; script</h2>
-<h3 id="bourne-shell-sh">Bourne shell (sh)</h3>
-<div class="code-block code-line-numbers open" style="counter-reset: code-block 0">
-    <div class="code-header language-Shell">
+</span></span><span class="line"><span class="cl">section .text</span></span></code></pre></div></div>
+<p><strong>prog.asm</strong>*</p>
+<div class="code-block code-line-numbers" style="counter-reset: code-block 0">
+    <div class="code-header language-Assembly">
         <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
         <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
         <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
-    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Shell" data-lang="Shell"><span class="line"><span class="cl"><span class="cp">#!/bin/sh
-</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
-</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;Bourne shell loop:&#34;</span>
+    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="o">%</span><span class="n">include</span> <span class="s2">&#34;lib.asm&#34;</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">i</span><span class="o">=</span><span class="m">1</span>
-</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="o">[</span> <span class="nv">$i</span> -le <span class="m">5</span> <span class="o">]</span>
-</span></span><span class="line"><span class="cl"><span class="k">do</span>
-</span></span><span class="line"><span class="cl">  <span class="nb">echo</span> <span class="s2">&#34;Number: </span><span class="nv">$i</span><span class="s2">&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="nv">i</span><span class="o">=</span><span class="sb">`</span>expr <span class="nv">$i</span> + 1<span class="sb">`</span>
-</span></span><span class="line"><span class="cl"><span class="k">done</span></span></span></code></pre></div></div>
-<p>This uses traditional Bourne syntax: while, test [ ], expr for arithmetic.</p></div><div class="post-footer">
-        <a href="/shells/">Read More</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/sh/">Sh</a>,&nbsp;<a href="/tags/csh/">Csh</a>,&nbsp;<a href="/tags/tcsh/">Tcsh</a>,&nbsp;<a href="/tags/bash/">Bash</a>,&nbsp;<a href="/tags/zsh/">Zsh</a>,&nbsp;<a href="/tags/kcsh/">Kcsh</a></div></div>
-</article></div></div>
+</span></span><span class="line"><span class="cl"><span class="n">section</span> <span class="o">.</span><span class="n">data</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">msg1</span>	<span class="n">db</span>		<span class="s2">&#34;Enter  a number: &#34;</span><span class="p">,</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="n">msg1len</span>	<span class="n">equ</span>		<span class="o">$-</span><span class="n">msg1</span><span class="o">-</span><span class="mi">1</span>		<span class="p">;</span> <span class="n">string</span> <span class="n">length</span><span class="p">,</span> <span class="n">minus</span> <span class="n">NULL</span>
+</span></span><span class="line"><span class="cl">	<span class="n">msg2</span>	<span class="n">db</span>		<span class="s2">&#34;Fib(n) = &#34;</span><span class="p">,</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="n">msg2len</span>	<span class="n">equ</span>		<span class="o">$-</span><span class="n">msg2</span><span class="o">-</span><span class="mi">1</span>		<span class="p">;</span> <span class="n">string</span> <span class="n">length</span><span class="p">,</span> <span class="n">minus</span> <span class="n">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">bufsize</span>	<span class="n">equ</span>	<span class="mi">10</span>			<span class="p">;</span> <span class="n">length</span> <span class="n">of</span> <span class="n">input</span> <span class="n">buffer</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	<span class="n">FIB_0</span>	<span class="n">db</span>	<span class="mi">0</span>			<span class="p">;</span> <span class="n">fib</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="n">FIB_1</span>	<span class="n">db</span>	<span class="mi">1</span>			<span class="p">;</span> <span class="n">fib</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">							<span class="p">;</span> <span class="o">...</span>
+</span></span><span class="line"><span class="cl">							<span class="p">;</span> <span class="n">fib</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">fib</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">							<span class="p">;</span> <span class="n">fib</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="n">fib</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">fib</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">0</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">							<span class="p">;</span> <span class="n">fib</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span> <span class="n">fib</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">3</span> 
+</span></span><span class="line"><span class="cl">							<span class="p">;</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">=</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">fmt</span>		<span class="n">db</span>	<span class="s2">&#34;Fib(n)=</span><span class="si">%ld</span><span class="s2">&#34;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">section</span> <span class="o">.</span><span class="n">bss</span>
+</span></span><span class="line"><span class="cl">	<span class="n">buffer</span>	<span class="n">resb</span>	<span class="n">bufsize</span><span class="o">+</span><span class="mi">1</span>		<span class="p">;</span> <span class="n">provide</span> <span class="n">space</span> <span class="k">for</span> <span class="n">ending</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">	<span class="n">fib</span>		<span class="n">resb</span>	<span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">section</span> <span class="o">.</span><span class="n">text</span>
+</span></span><span class="line"><span class="cl">	<span class="n">global</span> <span class="n">_start</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">_start</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="n">write</span> <span class="n">to</span> <span class="n">stdout</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rsi</span><span class="p">,</span> <span class="n">msg1</span>			<span class="p">;</span> <span class="n">address</span> <span class="n">of</span> <span class="n">string</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rdx</span><span class="p">,</span> <span class="n">msg1len</span>		<span class="p">;</span> <span class="n">length</span> <span class="n">of</span> <span class="n">string</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_write</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="n">read</span> <span class="n">stdin</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rsi</span><span class="p">,</span> <span class="n">buffer</span>			<span class="p">;</span> <span class="n">address</span> <span class="n">of</span> <span class="n">buffer</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rdx</span><span class="p">,</span> <span class="n">bufsize</span>		<span class="p">;</span> <span class="n">length</span> <span class="n">of</span> <span class="n">buffer</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_read</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="nb">convert</span> <span class="n">string</span> <span class="n">to</span> <span class="n">integer</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_str2int</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="n">calculates</span> <span class="n">fibonacci</span> <span class="n">number</span>
+</span></span><span class="line"><span class="cl">		<span class="n">xor</span>		<span class="n">rax</span><span class="p">,</span> <span class="n">rax</span>			<span class="p">;</span> <span class="n">clear</span> <span class="k">return</span> <span class="n">value</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rdx</span><span class="p">,</span> <span class="n">rcx</span>			<span class="p">;</span> <span class="n">move</span> <span class="s1">&#39;n&#39;</span> <span class="n">to</span> <span class="n">dl</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_fib</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="nb">convert</span> <span class="n">result</span> <span class="n">to</span> <span class="n">string</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_int2str</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="n">write</span> <span class="n">to</span> <span class="n">stdout</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_write</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">;</span> <span class="n">exit</span> <span class="n">program</span>
+</span></span><span class="line"><span class="cl">		<span class="n">xor</span>		<span class="n">rdi</span><span class="p">,</span> <span class="n">rdi</span>			<span class="p">;</span> <span class="n">error</span> <span class="n">code</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_exit</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">Calculate</span> <span class="n">the</span> <span class="n">Fibonacci</span> <span class="n">number</span> <span class="s1">&#39;n&#39;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="ne">Input</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span>	<span class="n">rdx</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">Output</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span>	<span class="n">rax</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">Modifies</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span>	<span class="n">rdx</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">push</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span> <span class="n">to</span> <span class="n">stack</span>
+</span></span><span class="line"><span class="cl">	<span class="p">;</span> <span class="n">push</span> <span class="n">n</span><span class="o">-</span><span class="mi">2</span> <span class="n">to</span> <span class="n">stack</span>
+</span></span><span class="line"><span class="cl">	<span class="n">_fn_fib</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">push</span>	<span class="n">rbp</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov</span>		<span class="n">rbp</span><span class="p">,</span> <span class="n">rsp</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">cmp</span>		<span class="n">dl</span><span class="p">,</span> <span class="mi">0</span>				<span class="p">;</span> <span class="n">input</span> <span class="o">==</span> <span class="mi">0</span> <span class="err">?</span>
+</span></span><span class="line"><span class="cl">		<span class="n">jne</span>		<span class="n">_fn_fib_A</span>
+</span></span><span class="line"><span class="cl">		<span class="n">add</span>		<span class="n">al</span><span class="p">,</span> <span class="n">byte</span> <span class="p">[</span><span class="n">FIB_0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">leave</span>
+</span></span><span class="line"><span class="cl">		<span class="n">ret</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">_fn_fib_A</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">cmp</span>		<span class="n">dl</span><span class="p">,</span> <span class="mi">1</span>				<span class="p">;</span> <span class="n">input</span> <span class="o">==</span> <span class="mi">1</span> <span class="err">?</span>
+</span></span><span class="line"><span class="cl">		<span class="n">jne</span>		<span class="n">_fn_fib_B</span>
+</span></span><span class="line"><span class="cl">		<span class="n">add</span>		<span class="n">al</span><span class="p">,</span> <span class="n">byte</span> <span class="p">[</span><span class="n">FIB_1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">leave</span>
+</span></span><span class="line"><span class="cl">		<span class="n">ret</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">_fn_fib_B</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">dec</span>		<span class="n">dl</span>					<span class="p">;</span> <span class="n">calculate</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">		<span class="n">push</span>	<span class="n">rdx</span>					<span class="p">;</span> <span class="n">store</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span> <span class="n">on</span> <span class="n">the</span> <span class="n">stack</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_fib</span>				<span class="p">;</span> <span class="n">recursion</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">pop</span>		<span class="n">rdx</span>					<span class="p">;</span> <span class="nb">load</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span> <span class="n">into</span> <span class="n">rdx</span>
+</span></span><span class="line"><span class="cl">		<span class="n">dec</span>		<span class="n">dl</span>					<span class="p">;</span> <span class="n">calculate</span> <span class="n">n</span><span class="o">-</span><span class="mi">2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">cmp</span>		<span class="n">dl</span><span class="p">,</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">		<span class="n">call</span>	<span class="n">_fn_fib</span>				<span class="p">;</span> <span class="n">recursion</span> <span class="n">n</span><span class="o">-</span><span class="mi">2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">leave</span>
+</span></span><span class="line"><span class="cl">		<span class="n">ret</span></span></span></code></pre></div></div>
+<p>Makefile</p>
+<div class="code-block code-line-numbers" style="counter-reset: code-block 0">
+    <div class="code-header language-Makefile">
+        <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
+        <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
+        <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
+    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Makefile" data-lang="Makefile"><span class="line"><span class="cl"><span class="c"># $@ = target file
+</span></span></span><span class="line"><span class="cl"><span class="c"># $&lt; = first dependency
+</span></span></span><span class="line"><span class="cl"><span class="c"># $^ = all dependencies
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>
+</span></span><span class="line"><span class="cl"><span class="nv">APP</span><span class="o">=</span>prog
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># First rule is the one executed when no parameters are fed to the Makefile
+</span></span></span><span class="line"><span class="cl"><span class="c">#all: run
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>
+</span></span><span class="line"><span class="cl"><span class="c">#run: $(APP)
+</span></span></span><span class="line"><span class="cl"><span class="c">#	./$&lt;
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>
+</span></span><span class="line"><span class="cl"><span class="c">#run: $(APP)
+</span></span></span><span class="line"><span class="cl"><span class="c">#	qemu-system-x86_64 -fda $&lt;
+</span></span></span><span class="line"><span class="cl"><span class="c">#
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nf">$(APP)</span><span class="o">:</span> <span class="k">$(</span><span class="nv">APP</span><span class="k">)</span>.<span class="n">o</span>
+</span></span><span class="line"><span class="cl">	ld -o <span class="nv">$@</span> $&lt;
+</span></span><span class="line"><span class="cl"><span class="c">#	gcc -Wall -no-pie -z noexecstack -o $@ $&lt;
+</span></span></span><span class="line"><span class="cl"><span class="c"></span>
+</span></span><span class="line"><span class="cl"><span class="nf">$(APP).o</span><span class="o">:</span> <span class="k">$(</span><span class="nv">APP</span><span class="k">)</span>.<span class="n">asm</span>
+</span></span><span class="line"><span class="cl">	nasm -f elf64 -F dwarf $&lt;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">.PHONY</span><span class="o">:</span> <span class="n">clean</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nf">clean</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">	<span class="k">$(</span>RM<span class="k">)</span> <span class="k">$(</span>APP<span class="k">)</span> *.o
+</span></span></code></pre></div></div>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2025-04-27</span>
+            </div></div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw" aria-hidden="true"></i>&nbsp;<a href="/tags/nasm/">Nasm</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/c/" class="prev" rel="prev" title="C"><i class="fas fa-angle-left fa-fw" aria-hidden="true"></i>C</a>
+            <a href="/rust/" class="next" rel="next" title="Rust">Rust<i class="fas fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
+</div>
+</article></div>
             </main><footer class="footer">
         <div class="footer-container"><div class="footer-line" itemscope itemtype="http://schema.org/CreativeWork"><i class="far fa-copyright fa-fw" aria-hidden="true"></i><span itemprop="copyrightYear">2025</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank">NeoTorino</a></span></div>
         </div>
@@ -502,5 +531,5 @@
         <div id="fixed-buttons-hidden"><a href="#" id="view-comments" class="fixed-button" title="View Comments">
                 <i class="fas fa-comment fa-fw" aria-hidden="true"></i>
             </a>
-        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script src="/lib/autocomplete/autocomplete.min.js"></script><script src="/lib/lunr/lunr.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/lib/clipboard/clipboard.min.js"></script><script src="/lib/typeit/index.umd.js"></script><script src="/lib/katex/katex.min.js"></script><script src="/lib/katex/contrib/auto-render.min.js"></script><script src="/lib/katex/contrib/copy-tex.min.js"></script><script src="/lib/katex/contrib/mhchem.min.js"></script><script src="/lib/cookieconsent/cookieconsent.min.js"></script><script>window.config={"cookieconsent":{"content":{"dismiss":"Got it!","link":"Learn more","message":"This website uses Cookies to improve your experience."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"data":{"id-1":"Real-world Cybersecurity"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":true,"left":"\\begin{equation}","right":"\\end{equation}"},{"display":true,"left":"\\begin{equation*}","right":"\\end{equation*}"},{"display":true,"left":"\\begin{align}","right":"\\end{align}"},{"display":true,"left":"\\begin{align*}","right":"\\end{align*}"},{"display":true,"left":"\\begin{alignat}","right":"\\end{alignat}"},{"display":true,"left":"\\begin{alignat*}","right":"\\end{alignat*}"},{"display":true,"left":"\\begin{gather}","right":"\\end{gather}"},{"display":true,"left":"\\begin{CD}","right":"\\end{CD}"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"},"typeit":{"cursorChar":"|","cursorSpeed":1000,"data":{"id-1":["id-1"]},"duration":-1,"speed":100}};</script><script src="/js/theme.min.js"></script></body>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script src="/lib/autocomplete/autocomplete.min.js"></script><script src="/lib/lunr/lunr.min.js"></script><script src="/lib/lazysizes/lazysizes.min.js"></script><script src="/lib/clipboard/clipboard.min.js"></script><script src="/lib/katex/katex.min.js"></script><script src="/lib/katex/contrib/auto-render.min.js"></script><script src="/lib/katex/contrib/copy-tex.min.js"></script><script src="/lib/katex/contrib/mhchem.min.js"></script><script src="/lib/cookieconsent/cookieconsent.min.js"></script><script>window.config={"comment":{},"cookieconsent":{"content":{"dismiss":"Got it!","link":"Learn more","message":"This website uses Cookies to improve your experience."},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":true,"left":"\\begin{equation}","right":"\\end{equation}"},{"display":true,"left":"\\begin{equation*}","right":"\\end{equation*}"},{"display":true,"left":"\\begin{align}","right":"\\end{align}"},{"display":true,"left":"\\begin{align*}","right":"\\end{align*}"},{"display":true,"left":"\\begin{alignat}","right":"\\end{alignat}"},{"display":true,"left":"\\begin{alignat*}","right":"\\end{alignat*}"},{"display":true,"left":"\\begin{gather}","right":"\\end{gather}"},{"display":true,"left":"\\begin{CD}","right":"\\end{CD}"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrIndexURL":"/index.json","maxResultLength":10,"noResultsFound":"No results found","snippetLength":30,"type":"lunr"}};</script><script src="/js/theme.min.js"></script></body>
 </html>

@@ -3,5 +3,61 @@
         <title>Tags - Tag - NeoTorino</title>
         <link>http://localhost:1313/tags/</link>
         <description>Tags - Tag - NeoTorino</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><atom:link href="http://localhost:1313/tags/" rel="self" type="application/rss+xml" /></channel>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 27 Apr 2025 15:48:06 &#43;0100</lastBuildDate><atom:link href="http://localhost:1313/tags/" rel="self" type="application/rss+xml" /><item>
+    <title>Nasm</title>
+    <link>http://localhost:1313/tags/nasm/</link>
+    <pubDate>Sun, 27 Apr 2025 15:48:06 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/nasm/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Bash</title>
+    <link>http://localhost:1313/tags/bash/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/bash/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Csh</title>
+    <link>http://localhost:1313/tags/csh/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/csh/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Kcsh</title>
+    <link>http://localhost:1313/tags/kcsh/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/kcsh/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Sh</title>
+    <link>http://localhost:1313/tags/sh/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/sh/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Tcsh</title>
+    <link>http://localhost:1313/tags/tcsh/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/tcsh/</guid>
+    <description><![CDATA[]]></description>
+</item>
+<item>
+    <title>Zsh</title>
+    <link>http://localhost:1313/tags/zsh/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/tags/zsh/</guid>
+    <description><![CDATA[]]></description>
+</item>
+</channel>
 </rss>

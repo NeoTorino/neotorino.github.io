@@ -14,7 +14,7 @@
 ## Print 1 to 5" script
 
 ### Bourne shell (sh)
-```
+```Shell
 #!/bin/sh
 
 echo "Bourne shell loop:"
@@ -30,7 +30,7 @@ This uses traditional Bourne syntax: while, test [ ], expr for arithmetic.
 
 
 ### Cshell (csh)
-```
+```Shell
 #!/bin/csh
 
 echo "C shell loop:"
@@ -45,7 +45,7 @@ In csh, variables use set, and arithmetic uses @. Also, conditions are in parent
 
 
 ### TENEX C shell
-```
+```Shell
 #!/bin/tcsh
 
 echo "TENEX C shell loop:"
@@ -59,7 +59,7 @@ end
 This is almost identical to csh, because tcsh is a compatible superset of csh.
 However, tcsh allows you to use nicer editing, filename completion, and better scripting practices if needed.
 
-```
+```Shell
 #!/bin/tcsh
 
 echo "TENEX C shell foreach loop:"

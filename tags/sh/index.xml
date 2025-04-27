@@ -1,0 +1,73 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Sh - Tag - NeoTorino</title>
+        <link>http://localhost:1313/tags/sh/</link>
+        <description>Sh - Tag - NeoTorino</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</lastBuildDate><atom:link href="http://localhost:1313/tags/sh/" rel="self" type="application/rss+xml" /><item>
+    <title>Shells</title>
+    <link>http://localhost:1313/shells/</link>
+    <pubDate>Sat, 26 Apr 2025 14:00:42 &#43;0100</pubDate>
+    <author>NeoTorino</author>
+    <guid>http://localhost:1313/shells/</guid>
+    <description><![CDATA[<table>
+  <thead>
+      <tr>
+          <th>Name</th>
+          <th>Path</th>
+          <th>FreeBSD</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Bourne shell</td>
+          <td>/bin/sh</td>
+          <td>Installed</td>
+      </tr>
+      <tr>
+          <td>Cshell</td>
+          <td>/bin/csh</td>
+          <td>Installed</td>
+      </tr>
+      <tr>
+          <td>TENEX C shell</td>
+          <td>/bin/tcsh</td>
+          <td>Installed</td>
+      </tr>
+      <tr>
+          <td>Bourne-again shell</td>
+          <td>/path/to/bin/bash</td>
+          <td>Available</td>
+      </tr>
+      <tr>
+          <td>Z shell</td>
+          <td>/path/to/bin/zsh</td>
+          <td>Available</td>
+      </tr>
+      <tr>
+          <td>Korn shell</td>
+          <td>/path/to/bin/kcsh</td>
+          <td>Available</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="print-1-to-5-script">Print 1 to 5&quot; script</h2>
+<h3 id="bourne-shell-sh">Bourne shell (sh)</h3>
+<div class="code-block code-line-numbers open" style="counter-reset: code-block 0">
+    <div class="code-header language-Shell">
+        <span class="code-title"><i class="arrow fas fa-angle-right fa-fw" aria-hidden="true"></i></span>
+        <span class="ellipses"><i class="fas fa-ellipsis-h fa-fw" aria-hidden="true"></i></span>
+        <span class="copy" title="Copy to clipboard"><i class="far fa-copy fa-fw" aria-hidden="true"></i></span>
+    </div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Shell" data-lang="Shell"><span class="line"><span class="cl"><span class="cp">#!/bin/sh
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;Bourne shell loop:&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">i</span><span class="o">=</span><span class="m">1</span>
+</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="o">[</span> <span class="nv">$i</span> -le <span class="m">5</span> <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="k">do</span>
+</span></span><span class="line"><span class="cl">  <span class="nb">echo</span> <span class="s2">&#34;Number: </span><span class="nv">$i</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="nv">i</span><span class="o">=</span><span class="sb">`</span>expr <span class="nv">$i</span> + 1<span class="sb">`</span>
+</span></span><span class="line"><span class="cl"><span class="k">done</span></span></span></code></pre></div></div>
+<p>This uses traditional Bourne syntax: while, test [ ], expr for arithmetic.</p>]]></description>
+</item>
+</channel>
+</rss>
