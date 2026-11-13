@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Insights - Jobs Finder</title>
+<style>
+  :root { --blue: #000064; --grey: #6c757d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: #f4f6fb; color: #333; }
+  header { background: var(--blue); color: #fff; padding: 1.5rem 1rem 1rem; text-align: center; }
+  header h1 { margin: 0; font-size: 1.8rem; }
+  header nav { margin-top: .9rem; display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
+  header nav a { color: #fff; text-decoration: none; padding: .35rem .9rem; border-radius: 999px;
+                 font-size: .9rem; opacity: .85; }
+  header nav a:hover { opacity: 1; background: rgba(255,255,255,.12); }
+  header nav a[aria-current="page"] { background: #fff; color: var(--blue); opacity: 1; font-weight: 600; }
+  main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 1rem; }
+  footer { text-align: center; padding: 1rem 1rem 2.5rem; color: var(--grey); font-size: .85rem; }
+  footer .stamp { display: inline-flex; align-items: center; gap: .6rem; background: #fff;
+                  border: 1px solid #e3e6ef; border-radius: 999px; padding: .5rem 1.1rem;
+                  box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+  footer .stamp strong { color: var(--blue); font-weight: 600; }
+  footer .dot { width: .55rem; height: .55rem; border-radius: 50%; background: #667eea;
+                animation: pulse 2.4s infinite; }
+  footer .site { margin-top: .75rem; font-size: .75rem; letter-spacing: .5px; opacity: .8; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(102,126,234,.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(102,126,234,0); }
+    100% { box-shadow: 0 0 0 0 rgba(102,126,234,0); }
+  }
+  @media (prefers-reduced-motion: reduce) { footer .dot { animation: none; } }
+  .grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .charts { grid-template-columns: 2fr 1fr; }
+  @media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+  .card, .panel { background: #fff; border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+  .card { padding: 1.25rem 1rem; text-align: center; }
+  .num { font-size: 2.2rem; font-weight: 700; color: var(--blue); }
+  .label { color: var(--grey); text-transform: uppercase; letter-spacing: 1px; font-size: .8rem; }
+  .note { color: var(--grey); font-size: .8rem; margin-top: .35rem; min-height: 1em; }
+  .panel { padding: 1.25rem; }
+  .panel h2 { margin: 0 0 1rem; font-size: 1.1rem; text-align: center; }
+  .panel h2 + .small-note { margin-top: -.75rem; }
+  .small-note { color: var(--grey); font-size: .75rem; text-align: center; margin: 0 0 1rem; }
+  .chart-box { position: relative; height: 380px; }
+  .cloud { display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+           gap: 6px 16px; padding: 1.5rem 1rem; min-height: 360px; }
+  .cloud span { line-height: 1.2; }
+  .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-bottom: .75rem; }
+  .tab { border: 1px solid var(--blue); background: #fff; color: var(--blue); border-radius: 999px;
+         padding: .4rem 1rem; font-size: .9rem; cursor: pointer; }
+  .tab[aria-selected="true"] { background: var(--blue); color: #fff; }
+  .muted { color: var(--grey); font-size: .85rem; text-align: center; margin: 0 0 1rem; }
+  .jobs { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  a.job { display: block; padding: 1rem; border: 1px solid #e3e6ef; border-radius: 12px;
+          color: inherit; text-decoration: none; background: #fff;
+          transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  a.job:hover, a.job:focus-visible { transform: translateY(-3px); border-color: var(--blue);
+          box-shadow: 0 8px 18px rgba(0,0,0,.12); outline: none; }
+  .job-title { font-weight: 600; color: var(--blue); margin-bottom: .35rem; overflow-wrap: anywhere; }
+  .job-org { font-size: .9rem; color: #333; margin-bottom: .35rem; overflow-wrap: anywhere; }
+  .job-loc { font-size: .85rem; color: var(--grey); }
+  .more { text-align: center; margin-top: 1rem; }
+  .more button { border: 0; background: var(--blue); color: #fff; border-radius: 8px;
+                 padding: .55rem 1.4rem; cursor: pointer; }
+  .filter { display: block; width: 100%; max-width: 480px; margin: 0 auto 1rem; padding: .6rem 1rem;
+            border: 1px solid #cfd4e2; border-radius: 999px; font-size: 1rem; }
+  .filter:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,0,100,.15); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { padding: .75rem 1rem; text-align: center; border-bottom: 1px solid #f0f1f5; }
+  th:first-child, td:first-child { text-align: left; }
+  th { background: #fafbfc; border-bottom: 2px solid #e9ecef; font-weight: 500; color: #495057;
+       white-space: nowrap; }
+  th button { background: none; border: 0; font: inherit; color: inherit; cursor: pointer; padding: 0; }
+  .ind { color: var(--grey); opacity: .6; margin-left: .25rem; }
+  tbody tr:hover td { background: #f8f9fa; }
+  td.org-name { font-weight: 500; color: #212529; overflow-wrap: anywhere; }
+  .badge { background: #e3f2fd; color: #1565c0; padding: .25rem .75rem; border-radius: 12px;
+           font-weight: 500; font-size: .85rem; display: inline-block; min-width: 50px; }
+  .btn { display: inline-block; padding: .35rem .75rem; font-size: .75rem; font-weight: 500;
+         border: 1px solid; border-radius: 4px; text-decoration: none; white-space: nowrap; }
+  .btn-careers { color: #3b82f6; border-color: #3b82f6; }
+  .btn-careers:hover { background: #3b82f6; color: #fff; }
+  .btn-jobs { color: #16a34a; border-color: #16a34a; }
+  .btn-jobs:hover { background: #16a34a; color: #fff; }
+  .na { color: var(--grey); }
+  .narrow { max-width: 800px; margin: 0 auto; line-height: 1.6; }
+  .narrow section { margin-bottom: 2rem; }
+  .narrow h2 { color: var(--blue); }
+  .narrow a { color: var(--blue); }
+  .disclaimer { background: #e7f1ff; border: 1px solid #b6d4fe; border-radius: 10px; padding: 1rem 1.25rem; }
+  .disclaimer h3 { margin-top: 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Jobs Finder</h1>
+  <nav><a href="index.html">Jobs</a><a href="organisations.html">Organisations</a><a href="insights.html" aria-current="page">Insights</a><a href="about.html">About</a></nav>
+</header>
+<main>
+
+  <p class="small-note" id="windowNote"></p>
+  <section class="grid cards" id="cards"></section>
+  <section class="grid charts">
+    <div class="panel"><h2 id="perDayTitle">Jobs Posted Per Day</h2>
+      <div class="chart-box"><canvas id="perDay"></canvas></div></div>
+    <div class="panel"><h2 id="countriesTitle">Top Countries</h2>
+      <div class="chart-box"><canvas id="countries"></canvas></div></div>
+  </section>
+  <section class="panel">
+    <h2>Job Keywords</h2>
+    <p class="small-note" id="kwNote"></p>
+    <div class="cloud" id="cloud"></div>
+  </section>
+
+</main>
+<footer>
+  <div class="stamp"><span class="dot" aria-hidden="true"></span>
+    <span>Last updated <strong><time datetime="2026-11-13T21:56:20+00:00">13 November 2026, 21:56 UTC</time></strong></span></div>
+  <div class="site">Jobs Finder</div>
+</footer>
+<script id="data" type="application/json">{"overview": {"total_jobs": 147106, "total_organizations": 559, "avg_jobs_per_org": 263.16, "posted_today": 1293, "last_7_days": 27681, "previous_7_days": 28125, "latest_posting": "2026-11-13"}, "jobs_per_day": {"dates": ["2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-10", "2026-10-11", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08", "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13"], "counts": [218, 30, 432, 482, 494, 499, 436, 20, 28, 589, 585, 554, 562, 481, 85, 33, 663, 779, 812, 776, 652, 29, 30, 357, 949, 893, 854, 902, 38, 69, 923, 1018, 1068, 1432, 1824, 43, 94, 1134, 1334, 1398, 1276, 1156, 54, 107, 1354, 1516, 1542, 1427, 1311, 64, 175, 1719, 1832, 2266, 1842, 1651, 97, 135, 2430, 2350, 2847, 2257, 2637, 116, 198, 2561, 2723, 2880, 2916, 3611, 180, 246, 3679, 3827, 3790, 3826, 5103, 315, 330, 5560, 5402, 5636, 5497, 5385, 511, 536, 6072, 6444, 5832, 6993, 1293]}, "top_countries": {"countries": ["United States", "United Kingdom", "India", "Canada", "Unknown", "Germany", "Mexico", "China"], "counts": [79513, 11551, 8851, 5167, 5124, 3369, 2559, 2535]}, "word_cloud": {"words": [{"text": "Experience", "count": 15228}, {"text": "Work", "count": 13228}, {"text": "Team", "count": 10614}, {"text": "Business", "count": 9791}, {"text": "Support", "count": 8855}, {"text": "Data", "count": 8292}, {"text": "Skills", "count": 8190}, {"text": "Management", "count": 7918}, {"text": "Including", "count": 6820}, {"text": "Customer", "count": 6211}, {"text": "Development", "count": 5701}, {"text": "Service", "count": 5600}, {"text": "Ability", "count": 5291}, {"text": "Time", "count": 5203}, {"text": "Solutions", "count": 5184}, {"text": "Services", "count": 5038}, {"text": "Years", "count": 4992}, {"text": "Technology", "count": 4962}, {"text": "Working", "count": 4914}, {"text": "Required", "count": 4858}, {"text": "Requirements", "count": 4854}, {"text": "Clients", "count": 4773}, {"text": "Teams", "count": 4771}, {"text": "Strong", "count": 4767}, {"text": "Technical", "count": 4646}, {"text": "Knowledge", "count": 4611}, {"text": "Operations", "count": 4440}, {"text": "Environment", "count": 4406}, {"text": "Ensure", "count": 4397}, {"text": "Process", "count": 4243}, {"text": "People", "count": 4230}, {"text": "Youll", "count": 4192}, {"text": "Systems", "count": 4179}, {"text": "Quality", "count": 4128}, {"text": "Engineering", "count": 4029}, {"text": "Financial", "count": 4016}, {"text": "Global", "count": 3955}, {"text": "Company", "count": 3853}, {"text": "Product", "count": 3848}, {"text": "Health", "count": 3763}, {"text": "Client", "count": 3753}, {"text": "Customers", "count": 3689}, {"text": "Performance", "count": 3669}, {"text": "Based", "count": 3586}, {"text": "High", "count": 3579}, {"text": "Build", "count": 3494}, {"text": "Provide", "count": 3487}, {"text": "Day", "count": 3484}, {"text": "Opportunities", "count": 3474}, {"text": "Status", "count": 3472}], "sampled_docs": 5000}, "window_days": 90}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+
+const D = JSON.parse(document.getElementById('data').textContent);
+const nf = new Intl.NumberFormat('en-GB');
+const o = D.overview;
+const PALETTE = ['#000064','#667eea','#764ba2','#f093fb','#f5576c','#4facfe','#43e97b','#fdcb6e','#ff6b6b'];
+const W = D.window_days;
+
+document.getElementById('windowNote').textContent =
+  'All figures on this page cover the last ' + W + ' days, the same period as the Jobs page.';
+document.getElementById('perDayTitle').textContent = 'Jobs Posted Per Day (last ' + W + ' days)';
+document.getElementById('countriesTitle').textContent = 'Top Countries (last ' + W + ' days)';
+
+function change(cur, prev) {
+  if (!prev) return 'previous 7 days: ' + nf.format(prev);
+  const pct = Math.round((cur - prev) / prev * 100);
+  return (pct >= 0 ? '+' : '') + pct + '% vs previous 7 days';
+}
+
+const cards = [
+  ['Total jobs', nf.format(o.total_jobs), o.latest_posting ? 'latest posting ' + o.latest_posting : ''],
+  ['Organisations', nf.format(o.total_organizations), ''],
+  ['Avg jobs / org', o.avg_jobs_per_org.toFixed(1), ''],
+  ['Posted today', nf.format(o.posted_today), 'UTC date'],
+  ['Last 7 days', nf.format(o.last_7_days), change(o.last_7_days, o.previous_7_days)],
+];
+const cardsEl = document.getElementById('cards');
+for (const [label, value, note] of cards) {
+  const c = document.createElement('div'); c.className = 'card';
+  for (const [cls, text] of [['num', value], ['label', label], ['note', note]]) {
+    const d = document.createElement('div'); d.className = cls; d.textContent = text; c.appendChild(d);
+  }
+  cardsEl.appendChild(c);
+}
+
+new Chart(document.getElementById('perDay'), {
+  type: 'line',
+  data: { labels: D.jobs_per_day.dates, datasets: [{
+    label: 'Jobs posted', data: D.jobs_per_day.counts, borderColor: '#000064',
+    backgroundColor: 'rgba(102,126,234,.12)', fill: true, tension: .3,
+    borderWidth: 2, pointRadius: 1.5, pointHoverRadius: 6 }] },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { ticks: { maxTicksLimit: 8, maxRotation: 45 } },
+              y: { beginAtZero: true, title: { display: true, text: 'Jobs posted' } } } }
+});
+
+const cTotal = D.top_countries.counts.reduce((a, b) => a + b, 0);
+new Chart(document.getElementById('countries'), {
+  type: 'doughnut',
+  data: { labels: D.top_countries.countries, datasets: [{
+    data: D.top_countries.counts, backgroundColor: PALETTE,
+    borderColor: '#fff', borderWidth: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true } },
+      tooltip: { callbacks: { label: c => c.label + ': ' + nf.format(c.parsed) +
+        ' (' + (cTotal ? (c.parsed / cTotal * 100).toFixed(1) : '0.0') + '%)' } } } }
+});
+
+document.getElementById('kwNote').textContent = 'Keywords are based on the ' +
+  nf.format(D.word_cloud.sampled_docs) + ' most recently posted jobs.';
+
+const words = D.word_cloud.words;
+const cloud = document.getElementById('cloud');
+if (!words.length) {
+  cloud.textContent = 'No word data available.';
+} else {
+  const counts = words.map(w => w.count);
+  const max = Math.max(...counts), min = Math.min(...counts);
+  [...words].sort(() => Math.random() - .5).forEach((w, i) => {
+    const ratio = max > min ? (w.count - min) / (max - min) : .5;
+    const s = document.createElement('span');
+    s.textContent = w.text;
+    s.title = w.text + ': ' + nf.format(w.count) + ' mentions';
+    s.style.fontSize = Math.round(16 + ratio * 32) + 'px';
+    s.style.color = PALETTE[i % PALETTE.length];
+    s.style.fontWeight = ratio > .7 ? '700' : ratio > .4 ? '600' : '400';
+    cloud.appendChild(s);
+  });
+}
+
+</script>
+</body>
+</html>
