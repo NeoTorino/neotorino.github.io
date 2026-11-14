@@ -55,14 +55,27 @@
   .tab[aria-selected="true"] { background: var(--blue); color: #fff; }
   .muted { color: var(--grey); font-size: .85rem; text-align: center; margin: 0 0 1rem; }
   .jobs { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-  a.job { display: block; padding: 1rem; border: 1px solid #e3e6ef; border-radius: 12px;
-          color: inherit; text-decoration: none; background: #fff;
+    a.job { display: flex; flex-direction: column; padding: 1rem; border: 1px solid #e3e6ef;
+          border-radius: 12px; color: inherit; text-decoration: none; background: #fff;
           transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
   a.job:hover, a.job:focus-visible { transform: translateY(-3px); border-color: var(--blue);
           box-shadow: 0 8px 18px rgba(0,0,0,.12); outline: none; }
-  .job-title { font-weight: 600; color: var(--blue); margin-bottom: .35rem; overflow-wrap: anywhere; }
-  .job-org { font-size: .9rem; color: #333; margin-bottom: .35rem; overflow-wrap: anywhere; }
-  .job-loc { font-size: .85rem; color: var(--grey); }
+  .job-title { font-weight: 600; color: var(--blue); margin-bottom: .35rem; overflow-wrap: anywhere;
+               line-height: 1.3; min-height: 3.9em;
+               display: -webkit-box; -webkit-box-orient: vertical;
+               -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+  .job-org { font-size: .9rem; color: #333; margin-bottom: .75rem; overflow-wrap: anywhere;
+             display: -webkit-box; -webkit-box-orient: vertical;
+             -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .job-meta { display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+              margin-top: auto; }
+  .job-loc { font-size: .85rem; color: var(--grey); min-width: 0; overflow-wrap: anywhere; }
+  .job-age { flex-shrink: 0; white-space: nowrap; padding: .15rem .6rem; border-radius: 999px;
+             font-size: .75rem; font-weight: 600; }
+  .age-day     { background: #16a34a; color: #fff; }
+  .age-week    { background: #e3f2fd; color: #1565c0; }
+  .age-month   { background: #fff3e0; color: #b45309; }
+  .age-quarter { background: #eceff3; color: #6c757d; }
   .more { text-align: center; margin-top: 1rem; }
   .more button { border: 0; background: var(--blue); color: #fff; border-radius: 8px;
                  padding: .55rem 1.4rem; cursor: pointer; }
@@ -115,7 +128,7 @@
 </main>
 <footer>
   <div class="stamp"><span class="dot" aria-hidden="true"></span>
-    <span>Last updated <strong><time datetime="2026-11-14T22:22:20+00:00">14 November 2026, 22:22 UTC</time></strong></span></div>
+    <span>Last updated <strong><time datetime="2026-11-14T23:07:00+00:00">14 November 2026, 23:07 UTC</time></strong></span></div>
   <div class="site">Job Finder</div>
 </footer>
 <script id="data" type="application/json">{"new_jobs": [{"key": "day", "label": "Last day", "days": 1, "total": 4466, "files": ["data/jobs-day-001.json"]}, {"key": "week", "label": "Last week", "days": 7, "total": 33469, "files": ["data/jobs-week-001.json", "data/jobs-week-002.json"]}, {"key": "month", "label": "Last month", "days": 30, "total": 108584, "files": ["data/jobs-month-001.json", "data/jobs-month-002.json", "data/jobs-month-003.json", "data/jobs-month-004.json", "data/jobs-month-005.json", "data/jobs-month-006.json"]}, {"key": "quarter", "label": "Last 3 months", "days": 90, "total": 162709, "files": ["data/jobs-quarter-001.json", "data/jobs-quarter-002.json", "data/jobs-quarter-003.json", "data/jobs-quarter-004.json", "data/jobs-quarter-005.json", "data/jobs-quarter-006.json", "data/jobs-quarter-007.json", "data/jobs-quarter-008.json", "data/jobs-quarter-009.json"]}]}</script>
@@ -199,6 +212,18 @@ if (NEW.length) {
     });
   }
 
+  // Calendar-day age (UTC), bucketed to match the tabs
+  const TODAY = Date.parse(new Date().toISOString().slice(0, 10));
+  function ageTag(dateStr) {
+    const posted = Date.parse(dateStr);
+    if (isNaN(posted)) return null;
+    const days = Math.round((TODAY - posted) / 86400000);
+    if (days <= 1)  return { cls: 'age-day',     text: 'Last day' };
+    if (days <= 7)  return { cls: 'age-week',    text: '1 week' };
+    if (days <= 30) return { cls: 'age-month',   text: '1 month' };
+    return { cls: 'age-quarter', text: '3 months' };
+  }
+
   function renderJobs() {
     const grp = NEW[active];
     const list = matching(grp);
@@ -207,15 +232,23 @@ if (NEW.length) {
     list.slice(0, visible).forEach(j => {
       const a = document.createElement('a');
       a.className = 'job'; a.href = j.href; a.target = '_blank'; a.rel = 'noopener noreferrer';
-      const t = document.createElement('div'); t.className = 'job-title'; t.textContent = j.title;
+      const t = document.createElement('div'); t.className = 'job-title'; t.textContent = j.title; t.title = j.title;
       a.appendChild(t);
       if (j.organisation) {
         const o = document.createElement('div'); o.className = 'job-org'; o.textContent = j.organisation;
         a.appendChild(o);
       }
+      const meta = document.createElement('div'); meta.className = 'job-meta';
       const l = document.createElement('div'); l.className = 'job-loc';
       l.textContent = j.location || 'Location not stated';
-      a.appendChild(l);
+      meta.appendChild(l);
+      const tag = ageTag(j.date_posted);
+      if (tag) {
+        const g = document.createElement('div');
+        g.className = 'job-age ' + tag.cls; g.textContent = tag.text;
+        meta.appendChild(g);
+      }
+      a.appendChild(meta);
       jobsEl.appendChild(a);
     });
 

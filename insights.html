@@ -55,14 +55,27 @@
   .tab[aria-selected="true"] { background: var(--blue); color: #fff; }
   .muted { color: var(--grey); font-size: .85rem; text-align: center; margin: 0 0 1rem; }
   .jobs { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-  a.job { display: block; padding: 1rem; border: 1px solid #e3e6ef; border-radius: 12px;
-          color: inherit; text-decoration: none; background: #fff;
+    a.job { display: flex; flex-direction: column; padding: 1rem; border: 1px solid #e3e6ef;
+          border-radius: 12px; color: inherit; text-decoration: none; background: #fff;
           transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
   a.job:hover, a.job:focus-visible { transform: translateY(-3px); border-color: var(--blue);
           box-shadow: 0 8px 18px rgba(0,0,0,.12); outline: none; }
-  .job-title { font-weight: 600; color: var(--blue); margin-bottom: .35rem; overflow-wrap: anywhere; }
-  .job-org { font-size: .9rem; color: #333; margin-bottom: .35rem; overflow-wrap: anywhere; }
-  .job-loc { font-size: .85rem; color: var(--grey); }
+  .job-title { font-weight: 600; color: var(--blue); margin-bottom: .35rem; overflow-wrap: anywhere;
+               line-height: 1.3; min-height: 3.9em;
+               display: -webkit-box; -webkit-box-orient: vertical;
+               -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+  .job-org { font-size: .9rem; color: #333; margin-bottom: .75rem; overflow-wrap: anywhere;
+             display: -webkit-box; -webkit-box-orient: vertical;
+             -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .job-meta { display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+              margin-top: auto; }
+  .job-loc { font-size: .85rem; color: var(--grey); min-width: 0; overflow-wrap: anywhere; }
+  .job-age { flex-shrink: 0; white-space: nowrap; padding: .15rem .6rem; border-radius: 999px;
+             font-size: .75rem; font-weight: 600; }
+  .age-day     { background: #16a34a; color: #fff; }
+  .age-week    { background: #e3f2fd; color: #1565c0; }
+  .age-month   { background: #fff3e0; color: #b45309; }
+  .age-quarter { background: #eceff3; color: #6c757d; }
   .more { text-align: center; margin-top: 1rem; }
   .more button { border: 0; background: var(--blue); color: #fff; border-radius: 8px;
                  padding: .55rem 1.4rem; cursor: pointer; }
@@ -120,7 +133,7 @@
 </main>
 <footer>
   <div class="stamp"><span class="dot" aria-hidden="true"></span>
-    <span>Last updated <strong><time datetime="2026-11-14T22:22:20+00:00">14 November 2026, 22:22 UTC</time></strong></span></div>
+    <span>Last updated <strong><time datetime="2026-11-14T23:07:00+00:00">14 November 2026, 23:07 UTC</time></strong></span></div>
   <div class="site">Job Finder</div>
 </footer>
 <script id="data" type="application/json">{"overview": {"total_jobs": 162709, "total_organizations": 573, "avg_jobs_per_org": 283.96, "posted_today": 32, "last_7_days": 32925, "previous_7_days": 31073, "latest_posting": "2026-11-14"}, "jobs_per_day": {"dates": ["2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-10", "2026-10-11", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08", "2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-14"], "counts": [38, 468, 512, 526, 536, 468, 23, 33, 617, 619, 586, 594, 520, 90, 34, 707, 828, 857, 826, 719, 33, 45, 377, 1008, 953, 900, 956, 41, 78, 971, 1075, 1160, 1526, 2099, 50, 97, 1171, 1427, 1472, 1343, 1245, 63, 109, 1435, 1631, 1633, 1519, 1385, 68, 195, 1857, 1981, 2458, 1986, 1762, 105, 144, 2559, 2543, 3064, 2488, 3018, 126, 233, 2770, 2966, 3162, 3118, 3855, 208, 267, 3938, 4132, 4126, 4242, 5597, 340, 371, 6092, 5975, 6156, 6075, 5860, 544, 577, 6641, 7069, 6422, 7750, 4434, 32]}, "top_countries": {"countries": ["United States", "United Kingdom", "India", "Unknown", "Canada", "Germany", "France", "Mexico"], "counts": [85729, 12777, 9624, 7648, 5845, 3718, 2902, 2872]}, "word_cloud": {"words": [{"text": "Experience", "count": 15199}, {"text": "Work", "count": 12831}, {"text": "Team", "count": 10050}, {"text": "Business", "count": 9924}, {"text": "Support", "count": 8682}, {"text": "Customer", "count": 7541}, {"text": "Management", "count": 7145}, {"text": "Skills", "count": 7086}, {"text": "Data", "count": 7080}, {"text": "Including", "count": 6628}, {"text": "Service", "count": 5558}, {"text": "Customers", "count": 5421}, {"text": "Youll", "count": 5342}, {"text": "Development", "count": 5293}, {"text": "Time", "count": 5038}, {"text": "Ability", "count": 4941}, {"text": "Working", "count": 4789}, {"text": "Solutions", "count": 4773}, {"text": "Technical", "count": 4764}, {"text": "Strong", "count": 4668}, {"text": "Sales", "count": 4542}, {"text": "Teams", "count": 4502}, {"text": "Years", "count": 4480}, {"text": "Requirements", "count": 4466}, {"text": "People", "count": 4461}, {"text": "Knowledge", "count": 4407}, {"text": "Environment", "count": 4390}, {"text": "Engineering", "count": 4323}, {"text": "Services", "count": 4255}, {"text": "Technology", "count": 4214}, {"text": "Required", "count": 4204}, {"text": "Ensure", "count": 4093}, {"text": "Day", "count": 4079}, {"text": "Product", "count": 4010}, {"text": "Clients", "count": 3977}, {"text": "Systems", "count": 3913}, {"text": "Process", "count": 3768}, {"text": "Financial", "count": 3678}, {"text": "Global", "count": 3663}, {"text": "High", "count": 3619}, {"text": "Operations", "count": 3541}, {"text": "Quality", "count": 3529}, {"text": "Build", "count": 3483}, {"text": "Client", "count": 3446}, {"text": "Opportunities", "count": 3440}, {"text": "Design", "count": 3409}, {"text": "Health", "count": 3399}, {"text": "Performance", "count": 3386}, {"text": "Company", "count": 3182}, {"text": "Provide", "count": 3155}], "sampled_docs": 5000}, "window_days": 90}</script>
